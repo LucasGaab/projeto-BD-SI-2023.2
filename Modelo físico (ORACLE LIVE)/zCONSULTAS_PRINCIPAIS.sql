@@ -32,13 +32,13 @@ WHERE END_CIDADE IS NOT NULL
 GROUP BY END_CIDADE
 HAVING COUNT(*) BETWEEN 1 AND 3;
 
---**Cidades onde há ao menos dois pacientes com mais de 20 anos e em que a média de idade naquela cidade seja superior a 20 (Subselect com tabela)
-SELECT P.END_CIDADE--, COUNT(*) AS NUMERO_DE_PACIENTES, AVG(IDADE) AS MEDIA_IDADE
+--**Cidades onde há ao menos dois pacientes com mais de 20 anos (Subselect com tabela)
+SELECT P.END_CIDADE
 FROM (SELECT P.END_CIDADE, P.IDADE
 FROM PACIENTE P
 WHERE P.IDADE > 20 AND P.END_CIDADE IS NOT NULL) P
 GROUP BY END_CIDADE
-HAVING COUNT(*) >= 2 AND AVG(P.IDADE) > 20;
+HAVING COUNT(*) >= 2;
 
 --CPF de dentistas que trabalham em algum consultório(Semijoin)
 SELECT D.CPF
