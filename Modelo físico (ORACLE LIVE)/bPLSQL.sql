@@ -12,14 +12,21 @@ BEGIN
 END;
 
 --Gatilho para impedir que um funcionário seja chefe de si mesmo
-CREATE OR REPLACE TRIGGER check_funcionario_chefe
-BEFORE INSERT OR UPDATE ON FUNCIONARIO
+CREATE OR REPLACE TRIGGER check_paciente_convenio
+BEFORE INSERT OR UPDATE ON DOCUMENTO
 FOR EACH ROW    
+DECLARE
+    v_convenio_count NUMBER;
 BEGIN 
-    IF :NEW.CHEFE = :NEW.CPF THEN
-        RAISE_APPLICATION_ERROR(-20000, 'O chefe não pode ser ele mesmo!!');
+    SELECT COUNT(*) INTO v_convenio_count
+    FROM PACIENTE P
+    JOIN CONVENIO C ON P.CONVENIO = C.CNPJ
+    WHERE P.CPF = :NEW.CPF_PACIENTE;
+    IF v_convenio_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'O paciente não possui um convênio associado!');
     END IF;
 END;
+/
 
 --Função a qual conforme CPF do paciente
 CREATE OR REPLACE FUNCTION qtd_consultas (CPF PACIENTE.CPF%TYPE) RETURN NUMBER IS
@@ -36,15 +43,17 @@ CREATE OR REPLACE TRIGGER check_cro_consulta
 BEFORE INSERT ON DOCUMENTO
 FOR EACH ROW
 DECLARE
-    v_cro_consulta VARCHAR2(14);
+    v_cro_consulta VARCHAR2(11); 
 BEGIN
-    -- Obtenha o CRO associado à consulta pela qual o documento está sendo gerado
-    SELECT REGISTRO
+    SELECT CPF_DENTISTA
     INTO v_cro_consulta
     FROM CONSULTA
-    WHERE CEP = :NEW.CEP AND ENDERECO = :NEW.ENDERECO AND NUM_SALA = :NEW.NUM_SALA AND CPF_DENTISTA = :NEW.CPF_DENTISTA AND CPF_PACIENTE = :NEW.CPF_PACIENTE AND MOMENTO_CONSULTA = :NEW.MOMENTO_CONSULTA;
-
-    -- Verifique se o CRO do documento é diferente do CRO associado à consulta
+    WHERE CEP = :NEW.CEP 
+    AND ENDERECO = :NEW.ENDERECO 
+    AND NUM_SALA = :NEW.NUM_SALA 
+    AND CPF_DENTISTA = :NEW.CPF_DENTISTA 
+    AND CPF_PACIENTE = :NEW.CPF_PACIENTE 
+    AND MOMENTO_CONSULTA = :NEW.MOMENTO_CONSULTA;
     IF v_cro_consulta <> :NEW.REGISTRO THEN
         RAISE_APPLICATION_ERROR(-20001, 'O documento não pode ser registrado com um CRO diferente do associado à consulta!');
     END IF;
@@ -78,7 +87,6 @@ EXCEPTION
         RETURN 0; -- Retorna 0 se não houver dados encontrados
 END;
 /
-
 DECLARE
     v_qtd_consultas NUMBER;
     v_qtd_documentos NUMBER;
