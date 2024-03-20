@@ -99,7 +99,7 @@ FROM CONSULTORIO C
 WHERE EXISTS (SELECT *
 FROM ATENDIMENTO_DENTISTA);
 
---**Todos os consultórios onde não há funcionários(Antijoin).
+--Todos os consultórios onde não há funcionários.
 SELECT C.ENDERECO
 FROM CONSULTORIO C
 WHERE NOT EXISTS (SELECT *
