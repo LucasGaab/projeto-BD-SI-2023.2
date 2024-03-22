@@ -14,7 +14,6 @@ WHERE NOT EXISTS (
     WHERE S.CEP = C.CEP AND S.ENDERECO = C.ENDERECO
 );
 
-
 --Cpf dos dentistas por nome do consultório que trabalham(INNER J)
 SELECT A.CPF, C.NOME
 FROM ATENDIMENTO_DENTISTA A, CONSULTORIO C
@@ -44,11 +43,23 @@ WHERE P.IDADE > 20 AND P.END_CIDADE IS NOT NULL) P
 GROUP BY END_CIDADE
 HAVING COUNT(*) >= 2;
 
---CPF de dentistas que trabalham em algum consultório(Semijoin)
-SELECT D.CPF
-FROM DENTISTA D
+--**Todos os consultório onde dentistas realizaram pelo menos um atendimento, pelo menos um funcionário trabalha e pelo menos um paciente tem convênio aceito por um dentista que trabalha lá.
+--(Semijoin)
+SELECT CONCAT(CONCAT(C.ENDERECO, ', '), C.NOME) AS CONSULTÓRIO 
+FROM CONSULTORIO C
 WHERE EXISTS (SELECT *
-FROM ATENDIMENTO_DENTISTA);
+FROM CONSULTA CO
+WHERE CO.CEP = C.CEP)
+AND EXISTS (SELECT *
+FROM SERVICO S
+WHERE S.CEP = C.CEP)
+AND EXISTS (SELECT *
+FROM PACIENTE P
+WHERE P.CONVENIO IN(SELECT AC.CNPJ
+FROM ACEITA_CONVENIO AC
+WHERE AC.CPF_DENTISTA IN(SELECT A.CPF
+FROM ATENDIMENTO_DENTISTA A
+WHERE A.CEP = C.CEP)));
 
 --**Consultas com o preço acima da média e nome dos pacientes consultados (Escalar)
 SELECT CO.MOMENTO_CONSULTA, CO.ENDERECO, CO.VALOR, P.NOME
