@@ -99,11 +99,14 @@ FROM CONSULTORIO C
 WHERE EXISTS (SELECT *
 FROM ATENDIMENTO_DENTISTA);
 
---Todos os consultórios onde não há funcionários.
+**Consultório onde não há funcionários(Antijoin)
 SELECT C.ENDERECO
 FROM CONSULTORIO C
-WHERE NOT EXISTS (SELECT *
-FROM SERVICO);
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM SERVICO S
+    WHERE S.CEP = C.CEP AND S.ENDERECO = C.ENDERECO
+);
 
 --Média entre as idades de dentistas da mesma cidade
 SELECT D.END_CIDADE AS CIDADE, AVG(D.IDADE) AS IDADE_MÉDIA
