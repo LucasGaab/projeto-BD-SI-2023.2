@@ -5,11 +5,15 @@ WHERE P.END_CIDADE IS NOT NULL
 GROUP BY P.END_CIDADE
 HAVING COUNT(*) BETWEEN 1 AND 3;
 
---**Todos os consultórios onde não há funcionários.(Antijoin)
+**Consultório onde não há funcionários(Antijoin)
 SELECT C.ENDERECO
 FROM CONSULTORIO C
-WHERE NOT EXISTS (SELECT *
-FROM SERVICO);
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM SERVICO S
+    WHERE S.CEP = C.CEP AND S.ENDERECO = C.ENDERECO
+);
+
 
 --Cpf dos dentistas por nome do consultório que trabalham(INNER J)
 SELECT A.CPF, C.NOME
